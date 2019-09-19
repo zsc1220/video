@@ -1,0 +1,44 @@
+import numpy as np
+import glob
+import os
+import cv2
+import json
+from base64 import b64encode
+ENCODING = 'utf-8'    # 指定编码形式
+path0 = r"D:\zsc\Data\data"
+path1 = r"D:\zsc\PythonCode\json2xml\imgxml"
+
+img_datas = glob.glob(path0 + '/*.tif')
+json_datas = glob.glob(path0 + '/*.json')
+block_xsize = 1000  # 切图的行大小
+block_ysize = 1000  # 切图的列大小
+slide_xsize = 500  # 滑动行步长
+slide_ysize = 500  # 滑动列步长
+
+for img_data in img_datas:
+    dirname, filename = os.path.split(img_data)
+    name, tail = os.path.splitext(filename)
+    img0 = cv2.imread(img_data, 1)
+    h, w, c = img0.shape
+    # print(w,h)
+    clip_datas = []
+    for y0 in range(0, h, slide_ysize):
+        if y0 + block_ysize > h:
+            y1 = h - block_ysize
+        else:
+            y1 = y0
+            y0 += slide_ysize
+        for x0 in range(0, w, slide_xsize):
+            if x0 + block_xsize > w:
+                x1 = w - block_xsize
+            else:
+                x1 = x0
+                x0 += slide_xsize
+            clip_datas.append([y1, x1])
+
+    for i in clip_datas:
+        img1 = img0[i[0]:i[0] + block_ysize, i[1]:i[1] + block_xsize]
+        out_path = os.path.join(path1, name + '_' + str(i[0]) + '_' + str(i[1]) + '.tif')  # 前纵后横
+        cv2.imwrite(out_path, img1)
+    # break
+
